@@ -1,13 +1,12 @@
 name: Commit cheat
 
 on:
-
   push:
     branches:
       - main
-      
+
   schedule:
-  - cron: "0 1/4 * * *"
+    - cron: "0 */4 * * *" # Setiap 4 jam sekali
 
 jobs:
   auto_commit:
@@ -15,24 +14,31 @@ jobs:
     steps:
       - name: Set global directory
         run: git config --global --add safe.directory /github/workspace
+
       - uses: actions/checkout@v3     
         with:
          persist-credentials: false
          fetch-depth: 1
+
+      - name: Tambahkan delay acak
+        run: |
+          RANDOM_DELAY=$(( RANDOM % 14400 )) # Antara 0 - 4 jam (14400 detik)
+          echo "Menunggu selama $RANDOM_DELAY detik..."
+          sleep $RANDOM_DELAY
 
       - name: Modify last update
         run: |
           cat > LAST_UPDATED
           d=`date '+%Y-%m-%dT%H:%M:%SZ'`
           echo $d > LAST_UPDATED
-          
+
       - name: Commit changes
         run: |
           git config --local user.email "sugabida@gmail.com"
           git config --local user.name "hiseulgi"
           git add -A
-          git commit -m "Apa coba? ✋😁✋"
-          
+          git commit -m "Apa coba? ✋😁✋" || echo "Tidak ada perubahan untuk dikomit"
+
       - name: GitHub Push
         uses: ad-m/github-push-action@v0.6.0
         with:
